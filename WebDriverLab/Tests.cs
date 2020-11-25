@@ -16,7 +16,7 @@ namespace WebDriverLab
         IWebDriver driver;
 
         [SetUp]
-        public void SetupTests()
+        public void BrowserSetup()
         {
             driver = new ChromeDriver();
             driver.Manage().Window.Maximize();
@@ -25,32 +25,43 @@ namespace WebDriverLab
 
 
         [Test]
-        public void GetNumberOfItemsAddedToCart()
+        public void GetItemAddedToCartAndCompareWithSelectedOne()
         {
-            driver.Navigate().GoToUrl("https://www.razer.com/gaming-mice");
+            driver.Navigate().GoToUrl("https://www.razer.com/shop/mice/gaming-mice");
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
-            IWebElement allMiceButton = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("/html/body/app-root/cx-storefront/cx-page-layout/cx-page-slot[1]/app-razer-dream[2]/app-v3-comp/section[3]/app-razer-dream/app-multipanels/section/div/div/div/div[2]/h3/a")));
-            allMiceButton.Click();
+            IWebElement productList = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("cx-product-container")));
+            IWebElement firstProductFromList = productList.FindElement(By.XPath("//app-razer-product-grid-item"));
 
-            IWebElement addToCartButton = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("mm-add-to-cart_RZ01-03350100-R3U1")));
+            IWebElement nameProductWebElement = firstProductFromList.FindElement(By.ClassName("product-item-title"));
+            string nameProduct = nameProductWebElement.Text;
+
+            IWebElement addToCartButton = firstProductFromList.FindElement(By.ClassName("add-to-cart-btn"));
             addToCartButton.Click();
 
-            IWebElement viewCartButton = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("/html/body/app-root/cx-storefront/cx-page-layout/cx-page-slot[1]/app-razer-main-sku/div/div/div[3]/button")));
+            IWebElement mainItemDevBlock = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//app-razer-main-sku")));
+            IWebElement viewCartButton = mainItemDevBlock.FindElement(By.ClassName("button-primary"));
             viewCartButton.Click();
 
-            IWebElement addedItems = wait.Until(ExpectedConditions.ElementExists(By.Id("cart-item-counter")));
+            IWebElement cartItemList = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//app-razer-cart-item-list")));
+            IWebElement addedItemInfoContainer = cartItemList.FindElement(By.ClassName("cx-info-container"));
+            IWebElement nameItemAddedToCart = addedItemInfoContainer.FindElement(By.ClassName("cx-name"));
+            string nameProductAddedToCart = nameItemAddedToCart.Text;
 
-            string numberItemText = addedItems.Text;
+            IWebElement numberAddedItems = driver.FindElement(By.Id("cart-item-counter"));
+
+            string numberItemText = numberAddedItems.Text;
             numberItemText = numberItemText.Split(' ')[1];
             numberItemText = numberItemText.Substring(1);
             numberItemText = numberItemText.Split(' ')[0];
-            Assert.IsTrue(numberItemText == "1");
+
+            Assert.IsTrue(numberItemText == "1" && nameProduct == nameProductAddedToCart);
+
         }
 
         [TearDown]
-        public void TearDownTests()
+        public void BrowserTearDown()
         {
             if (driver != null)
                 driver.Quit();
