@@ -1,0 +1,12 @@
+# Add any directories, files, or patterns you don't want to be tracked by version control
+/build
+/packages
+//WebDriverLab/vs
+/WebDriverLab/vs
+/WebDriverLab/obj
+/WebDriverLab/bin
+*.suo
+/WebDriverLab.v12.suo
+/WebDriverLab.v12.suo
+/.vs
+*.log
