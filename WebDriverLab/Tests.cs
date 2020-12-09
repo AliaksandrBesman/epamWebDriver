@@ -30,14 +30,29 @@ namespace WebDriverLab
             driver.Navigate().GoToUrl("https://www.razer.com/shop/mice/gaming-mice");
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("cx-product-container")));
+            const string allMicePrefix = @"//*[@class='cx-product-container']//app-razer-product-grid-item";
+            IList<IWebElement> productList = driver.FindElements(By.XPath(allMicePrefix));
+            IWebElement firstAvailableMouseToCart;
+            firstAvailableMouseToCart = productList[1];
+           
+            foreach (IWebElement mouse in productList)
+            {
+                
+                IWebElement targetMouse = FindElementByClassName(mouse, "add-to-cart-btn");
+                if (targetMouse != null && targetMouse.Text.ToUpper().Contains("ADD TO CART"))
+                {
+                    firstAvailableMouseToCart = mouse;
+                    
+                }
+            }
+            
+            
 
-            IWebElement productList = wait.Until(ExpectedConditions.ElementToBeClickable(By.ClassName("cx-product-container")));
-            IWebElement firstProductFromList = productList.FindElement(By.XPath("//app-razer-product-grid-item"));
-
-            IWebElement nameProductWebElement = firstProductFromList.FindElement(By.ClassName("product-item-title"));
+            IWebElement nameProductWebElement = firstAvailableMouseToCart.FindElement(By.ClassName("product-item-title"));
             string nameProduct = nameProductWebElement.Text;
 
-            IWebElement addToCartButton = firstProductFromList.FindElement(By.ClassName("add-to-cart-btn"));
+            IWebElement addToCartButton = firstAvailableMouseToCart.FindElement(By.ClassName("add-to-cart-btn"));
             addToCartButton.Click();
 
             IWebElement mainItemDevBlock = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//app-razer-main-sku")));
@@ -57,6 +72,19 @@ namespace WebDriverLab
             numberItemText = numberItemText.Split(' ')[0];
 
             Assert.IsTrue(numberItemText == "1" && nameProduct == nameProductAddedToCart);
+
+             IWebElement FindElementByClassName(IWebElement webElement, string searchAttribute)
+            {
+                try
+                {
+                    IWebElement requiredElement = webElement.FindElement(By.ClassName(searchAttribute));
+                    return requiredElement;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
 
         }
 
